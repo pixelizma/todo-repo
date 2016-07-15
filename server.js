@@ -15,7 +15,6 @@ var todos = [{
 }];
 
 app
-
 	.use(bodyParser.json()) //middleware
 
 	.get('/', function(req, res){
