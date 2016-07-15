@@ -7,7 +7,7 @@ var todoNextId = 1;
 var todos = [{
 	id: 1,
 	description: "Meet mom for lunch",
-	completed: false
+	completed: true
 }, {
 	id: 2,
 	description: "Got to market!",
@@ -31,6 +31,13 @@ app
 		}else if (queryParams.hasOwnProperty('completed') &&
 					queryParams.completed === 'false') {
 			filteredTodos = _.where(filteredTodos, {completed:false});
+		}
+
+		if (queryParams.hasOwnProperty('q') &&
+			queryParams.q.trim().length > 0) {
+			filteredTodos = _.filter(filteredTodos, function(todo){
+				return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+			});
 		}
 
 		res.json(filteredTodos);
