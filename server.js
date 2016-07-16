@@ -1,6 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
+var db = require('./db.js')
+
 var app = express();
 var port = process.env.PORT || 3000;
 var todoNextId = 1;
@@ -60,7 +62,16 @@ app.use(bodyParser.json()) //middleware
 
 .post('/todos', function(req, res) {
 	var body = _.pick(req.body, 'description');
-	body.description = body.description.trim();
+
+	db.todo
+		.create(body)
+		.then(function(todo) {
+			res.json(todo.toJSON());
+		}).catch(function(err) {
+			res.status(400).json(err);
+		});
+
+	/*body.description = body.description.trim();
 	body.id = addAnId();
 	body.completed = false;
 	if (!_.isBoolean(body.completed) ||
@@ -69,7 +80,7 @@ app.use(bodyParser.json()) //middleware
 		return res.status(400).send(body);
 	}
 	todos.push(body);
-	res.json(body)
+	res.json(body)*/
 })
 
 .delete('/todos/:id', function(req, res) {
@@ -114,11 +125,15 @@ app.use(bodyParser.json()) //middleware
 
 	_.extend(matchedTodo, validAttributes);
 	res.json(matchedTodo)
-})
-
-.listen(port, function() {
-	console.log('Express listening on', port, ' !');
 });
+
+db.sequelize.sync().then(function() {
+	app.listen(port, function() {
+		console.log('Express listening on', port, ' !');
+	});
+});
+
+
 
 function addAnId() {
 	return parseInt(todos[todos.length - 1].id) + 1;
