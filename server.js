@@ -22,31 +22,32 @@ app.use(bodyParser.json()) //middleware
 	res.send('Todo API Root');
 })
 
+
+
 .get('/todos', function(req, res) {
-	var queryParams = req.query;
-	var filteredTodos = todos;
+	var query = req.query;
+	var where = {};
 
-	if (queryParams.hasOwnProperty('completed') &&
-		queryParams.completed === 'true') {
-		filteredTodos = _.where(filteredTodos, {
-			completed: true
-		});
-	} else if (queryParams.hasOwnProperty('completed') &&
-		queryParams.completed === 'false') {
-		filteredTodos = _.where(filteredTodos, {
-			completed: false
-		});
+	if (query.hasOwnProperty('completed') && query.completed === 'true') {
+		where.completed = true;
+	} else if (query.hasOwnProperty('completed') && query.completed === 'false') {
+		where.completed = false;
 	}
 
-	if (queryParams.hasOwnProperty('q') &&
-		queryParams.q.trim().length > 0) {
-		filteredTodos = _.filter(filteredTodos, function(todo) {
-			return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-		});
+	if (query.hasOwnProperty('q') && query.q.trim().length > 0) {
+		where.description = {
+			$like: '%' + query.q + '%'
+		};
 	}
 
-	res.json(filteredTodos);
+	db.todo.findAll({where : where}).then(function(todos){
+		res.json(todos);
+	}, function(err){
+		res.status(500).send();
+	});
 })
+
+
 
 .get('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
@@ -62,6 +63,8 @@ app.use(bodyParser.json()) //middleware
 	});
 })
 
+
+
 .post('/todos', function(req, res) {
 	var body = _.pick(req.body, 'description');
 
@@ -73,6 +76,8 @@ app.use(bodyParser.json()) //middleware
 			res.status(400).json(err);
 		});
 })
+
+
 
 .delete('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
@@ -86,6 +91,8 @@ app.use(bodyParser.json()) //middleware
 		return res.status(400).send("There is not item for delete");
 	}
 })
+
+
 
 .put('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id);
@@ -117,6 +124,7 @@ app.use(bodyParser.json()) //middleware
 	_.extend(matchedTodo, validAttributes);
 	res.json(matchedTodo)
 });
+
 
 db.sequelize.sync().then(function() {
 	app.listen(port, function() {
