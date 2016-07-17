@@ -40,9 +40,11 @@ app.use(bodyParser.json()) //middleware
 		};
 	}
 
-	db.todo.findAll({where : where}).then(function(todos){
+	db.todo.findAll({
+		where: where
+	}).then(function(todos) {
 		res.json(todos);
-	}, function(err){
+	}, function(err) {
 		res.status(500).send();
 	});
 })
@@ -52,13 +54,13 @@ app.use(bodyParser.json()) //middleware
 .get('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 
-	db.todo.findById(todoId).then(function(todo){
+	db.todo.findById(todoId).then(function(todo) {
 		if (!!todo) {
 			res.json(todo.toJSON());
-		}else{
+		} else {
 			res.status(404).send();
 		}
-	}, function(err){
+	}, function(err) {
 		res.status(500).send();
 	});
 })
@@ -81,15 +83,42 @@ app.use(bodyParser.json()) //middleware
 
 .delete('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {
-		id: todoId
+
+	db.todo.destroy({
+		where: {
+			id: todoId
+		}
+	}).then(function(number) {
+		if (number <= 0) {
+			res.status(404).json({
+				error: 'There is no TODO for delete'
+			});
+		} else {
+			res.status(204).send();
+		}
+	}, function(err) {
+		res.status(500).send(err.message);
 	});
-	if (matchedTodo) {
+
+	/*db.todo.findById(todoId).then(function(todo){
+		if (!!todo) {
+
+		}else{
+			return res.status(400).send("There is not item for delete");
+		}
+	}, function(err){
+		res.status(500).send();
+	});*/
+
+	/*var matchedTodo = _.findWhere(todos, {
+		id: todoId
+	});*/
+	/*if (matchedTodo) {
 		todos = _.without(todos, matchedTodo);
 		return res.status(200).json(todos);
 	} else {
 		return res.status(400).send("There is not item for delete");
-	}
+	}*/
 })
 
 
