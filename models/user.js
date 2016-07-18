@@ -1,3 +1,6 @@
+var crypt = require('password-hash');
+var _ = require('underscore');
+
 module.exports = function(sequelize, DataTypes){
 	return sequelize.define('user', {
 		email: {
@@ -13,6 +16,11 @@ module.exports = function(sequelize, DataTypes){
 			allowNull: false,
 			validate: {
 				len: [7, 100]
+			},
+			set: function(value){
+				var salt = crypt.generate(value);
+
+				this.setDataValue('password', salt)
 			}
 		}
 	}, {
@@ -21,6 +29,12 @@ module.exports = function(sequelize, DataTypes){
 				if (typeof user.email === 'string') {
 					user.email = user.email.toLowerCase();
 				}
+			}
+		},
+		instanceMethods: {
+			toPublicJSON: function(){
+				var json = this.toJSON();
+				return _.pick(json, 'id', 'email', 'createdAt', 'updatedAt');
 			}
 		}
 	});
