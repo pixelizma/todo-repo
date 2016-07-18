@@ -99,59 +99,37 @@ app.use(bodyParser.json()) //middleware
 	}, function(err) {
 		res.status(500).send(err.message);
 	});
-
-	/*db.todo.findById(todoId).then(function(todo){
-		if (!!todo) {
-
-		}else{
-			return res.status(400).send("There is not item for delete");
-		}
-	}, function(err){
-		res.status(500).send();
-	});*/
-
-	/*var matchedTodo = _.findWhere(todos, {
-		id: todoId
-	});*/
-	/*if (matchedTodo) {
-		todos = _.without(todos, matchedTodo);
-		return res.status(200).json(todos);
-	} else {
-		return res.status(400).send("There is not item for delete");
-	}*/
 })
 
 
 
 .put('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id);
-	var matchedTodo = _.findWhere(todos, {
-		id: todoId
-	});
-
-	if (!matchedTodo) {
-		return res.status(400).send();
-	}
-
 	var body = _.pick(req.body, 'description', 'completed');
-	var validAttributes = {}
+	var attributes = {}
 
-	if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-		validAttributes.completed = body.completed;
-	} else if (body.hasOwnProperty('completed')) {
-		return res.status(400).send();
+	if (body.hasOwnProperty('completed')) {
+		attributes.completed = body.completed;
 	}
 
-	if (body.hasOwnProperty('description') &&
-		_.isString(body.description) &&
-		body.description.trim().length > 0) {
-		validAttributes.description = body.description
-	} else if (body.hasOwnProperty('description')) {
-		return res.status(400).send();
-	}
+	if (body.hasOwnProperty('description')) {
+		attributes.description = body.description
+	} 
 
-	_.extend(matchedTodo, validAttributes);
-	res.json(matchedTodo)
+	db.todo.findById(todoId).then(function(todo){
+		if (todo) {
+			return todo.update(attributes);
+		}else{
+			res.status(404).send();
+		}
+	}, function(){
+		res.status(500).send();
+
+	}).then(function(todo){
+		res.json(todo.toJSON());
+	}, function(err){
+		res.status(400).send(err);
+	});
 });
 
 
