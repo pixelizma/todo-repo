@@ -21,7 +21,7 @@ var todos = [{
 app.use(bodyParser.json()) //middleware
 
 app.get('/', function(req, res) {
-	res.send('Todo API Root');
+	res.status(200).send('Todo API Root');
 });
 
 app.get('/todos', middleware.requireAuthentication, function(req, res) {
