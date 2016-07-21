@@ -2,7 +2,6 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
 var db = require('./db.js');
-var crypt = require('password-hash');
 var middleware = require('./middleware.js')(db);
 
 var app = express();
